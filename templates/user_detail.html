@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %} 
+User details
+{% endblock %}
+
+{% block content %} 
+    <h1>User Details</h1>
+    <p><strong>Name:</strong> {{ user['name'] }}</p>
+    <p><strong>Surname:</strong> {{ user['surname'] }}</p>
+    <p><strong>Email:</strong> {{ user['email'] }}</p>
+    <p><strong>Birthdate:</strong> {{ user['birthdate'] }}</p>
+    <p><strong>Gender:</strong> {{ user['gender'] }}</p>
+    <p><strong>Deathdate:</strong> {{ user['deathdate'] }}</p>
+    <p><strong>Email:</strong> {{ user['email'] }}</p>
+
+    <p><a href="/"> Back to home </a></p>
+{% endblock %}

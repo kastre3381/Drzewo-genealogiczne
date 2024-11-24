@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %} 
+Create user
+{% endblock %}
+
+{% block content %} 
+<h1>Create a new User</h1>
+<form action="{{ url_for('create_user') }}" method="POST">
+    <label for="name">First Name:</label>
+    <input type="text" id="name" name="name" required><br><br>
+
+    <label for="surname">Last Name:</label>
+    <input type="text" id="surname" name="surname" required><br><br>
+
+    <label for="birthdate">Birthdate (YYYY-MM-DD):</label>
+    <input type="text" id="birthdate" name="birthdate" required><br><br>
+
+    <label for="deathdate">Death Date (YYYY-MM-DD or leave empty):</label>
+    <input type="text" id="deathdate" name="deathdate"><br><br>
+
+    <label for="gender">Gender:</label>
+    <select id="gender" name="gender" required>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select><br><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required><br><br>
+
+    <button type="submit">Create User</button>
+{% endblock %}
