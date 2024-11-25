@@ -5,7 +5,67 @@ Main page
 {% endblock %}
 
 {% block content %} 
-<h1>PDwCO - project</h1>
-<p><a href="/user/all"> Click here to see all users</a></p>
-<p><a href="/user/create_user"> Click here to create user</a></p>
+<h1 class="mb-5">PDwCO - project</h1>
+<table class=" table table-dark text-decoration-none">
+    <thead>
+        <tr>
+            <th>Operation</th>
+            <th>User</th>
+            <th>Director</th>
+            <th>Movie</th>
+            <th>Comment</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Create</td>
+            <td><a href="/user/create_user" class="text-decoration-none"> Create user </a></td>
+            <td><a href="/director/create_director" class="text-decoration-none">Create director </a></td>
+            <td><a href="/movie/create_movie" class="text-decoration-none">Create movie </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a href="/user/all/addMultiple" class="text-decoration-none"> Create multiple users using inside data </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+        </tr>
+        <tr>
+            <td>Get</td>
+            <td><a href="/user/all" class="text-decoration-none"> Get all users </a></td>
+            <td><a href="/director/all" class="text-decoration-none"> Get all directors</a></td>
+            <td><a href="/movie/all" class="text-decoration-none"> Get all movies</a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a href="/user/all/alive" class="text-decoration-none"> Get all alive users </a></td>
+            <td><a href="/director/all/alive" class="text-decoration-none"> Get all alive directors</a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a href="/user/all/dead" class="text-decoration-none"> Get all dead users </a></td>
+            <td><a href="/director/all/dead" class="text-decoration-none"> Get all dead directors</a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+        </tr>
+        <tr>
+            <td>Delete</td>
+            <td><a href="/user/all/delete" class="text-decoration-none"> Delete all users </a></td>
+            <td><a href="/director/all/delete" class="text-decoration-none"> Delete all directors</a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+        </tr>
+        <tr>
+            <td>Delete</td>
+            <td><a href="/user/all/delete/dead" class="text-decoration-none"> Delete all dead users </a></td>
+            <td><a href="/director/all/delete/dead" class="text-decoration-none"> Delete all dead directors</a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+            <td><a href="/" class="text-decoration-none"> </a></td>
+        </tr>
+    </tbody>
+</table>
 {% endblock %}

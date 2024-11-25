@@ -6,7 +6,7 @@ All users
 
 {% block content %} 
     <h1>Users List</h1>
-    <table>
+    <table class=" table table-dark">
         <thead>
             <tr>
                 <th>Name</th>
@@ -26,7 +26,7 @@ All users
                 <td>{{ person.deathdate or '-' }}</td>
                 <td>{{ person.gender }}</td>
                 <td>
-                    <a href="{{ url_for('get_user_by_email', email=person['email']) }}">{{ person['email'] }}</a>
+                    <a href="{{ url_for('get_director_by_email', email=person['email']) }}">{{ person['email'] }}</a>      
                 </td>                
             </tr>
             {% else %}

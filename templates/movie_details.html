@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %} 
+Movie details
+{% endblock %}
+
+{% block content %} 
+    <h1>Movie Details</h1>
+
+    <p><strong>Name:</strong> {{ movie['name'] }}</p>
+    <p><strong>Release date:</strong> {{ movie['release_date'] }}</p>
+    <p><strong>Length:</strong> {{ movie['length'] }}</p>
+    <p><strong>Director:</strong> 
+        {% if director %}
+        <a class="text-decoration-none" href="{{ url_for('get_director_by_email', email=director['email']) }}"> {{ director.name }} {{director.surname}} </a> 
+        {% else %}
+        None
+        {% endif %}
+    </p>
+
+    <p><a class="text-decoration-none" href="{{ url_for('delete_movie_by_name', name=movie['name']) }}" > Delete movie </a> </p>
+
+    <p><a class="text-decoration-none" href="{{ url_for('assign_director', name=movie['name']) }}" > Assign director </a> </p>
+
+    <p><a class="text-decoration-none" href="/"> Back to home </a></p>
+{% endblock %}

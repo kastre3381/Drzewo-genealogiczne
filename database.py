@@ -13,7 +13,7 @@ class Database:
     def close(self):
         self.driver.close()
         
-    def addMovie(self, name : str, release_date : datetime, director : str, length : datetime.time):
+    def addMovie(self, name : str, release_date : datetime, length : datetime.time):
        query_check = """
         MATCH (m:Movie {name: $name})
         RETURN m
@@ -23,42 +23,48 @@ class Database:
            result_check = session.run(query_check, name=name)
            existing_movie = result_check.single()
            if existing_movie:
-                return f"Movie with the name '{name}' already exists."
+                return 
            
            query = """
-           CREATE (m:Movie {name: $name, release_date: $release_date, director: $director, length: $length})
+           CREATE (m:Movie {name: $name, release_date: $release_date, length: $length})
            RETURN m
            """
            
-           result = session.run(query, name=name, release_date=release_date, director=director, length=length)
-           record = result.single()
-           if record:
-               return f"Movie '{record['m']['name']}' added successfully."
-           else:
-               return "Error adding movie."
+           session.run(query, name=name, release_date=release_date, length=length)
         
         
     def getAllMovies(self):
         query = """
         MATCH (m:Movie)
-        RETURN m.name AS name, m.release_date AS release_date, m.director AS director, m.length AS length
+        RETURN m.name AS name, m.release_date AS release_date, m.length AS length
         """
         
         with self.driver.session() as session:
             result = session.run(query)
             movies = []
             for record in result:
-                # Collect movie information from the result
                 movie = {
                     "name": record["name"],
                     "release_date": record["release_date"],
-                    "director": record["director"],
                     "length": record["length"]
                 }
                 movies.append(movie)
                 
             return movies
         
+    def getMovieByName(self, name):
+        query = """
+        MATCH (m:Movie)
+        WHERE m.name = $name
+        RETURN m
+        """
+        with self.driver.session() as session:
+            result = session.run(query, name=name)
+            movie = result.single()
+            if movie:
+                return movie['m']
+            else:
+                return None
         
     def deleteMovie(self, name):
         query_delete = """
@@ -67,65 +73,104 @@ class Database:
         """
 
         with self.driver.session() as session:
-            result = session.run(query_delete, name=name)
-            if result.summary().counters.nodes_deleted > 0:
-                return f"Movie '{name}' has been deleted."
-            else:
-                return f"No movie found with the name '{name}'."
+            session.run(query_delete, name=name)
             
             
     def addPerson(self, name, surname, birthdate, deathdate, gender, email, label : str):
         query_create = """
         CREATE (p:Person:
-        """ + label + """
+        """ + label + """ 
         {name: $name, surname: $surname, birthdate: $birthdate, deathdate: $deathdate, gender: $gender, email: $email})
         RETURN p
         """
 
         with self.driver.session() as session:
-            result_create = session.run(query_create, name=name, 
-                                        surname=surname, birthdate=birthdate, 
-                                        deathdate=deathdate, gender=gender,
-                                        email=email)
-            record = result_create.single()
+            session.run(query_create, name=name, 
+                        surname=surname, birthdate=birthdate, 
+                        deathdate=deathdate, gender=gender,
+                        email=email)
 
-            if record:
-                return f"Person '{record['p']['name']}' added successfully."
-            else:
-                return "Error adding person."
-
-    
-    def deletePerson(self, name, surname, label):
-        query_delete = """
-        MATCH (p:Person:{label} {name: $name, surname: $surname})
-        DELETE p
-        """
-
-        with self.driver.session() as session:
-            result = session.run(query_delete, name=name, surname=surname)
-            if result.summary().counters.nodes_deleted > 0:
-                return f"Person '{name} {surname}' has been deleted."
-            else:
-                return f"No person found with the name '{name} {surname}'."
 
     def deletePerson(self, email, label):
         query_delete = """
         MATCH (p:Person:
-        """ + label + """
+        """ + label + """ 
         {email: $email})
+        DELETE p
+        """
+        
+        with self.driver.session() as session:
+            session.run(query_delete, email=email)
+            
+    def deleteDeadPerson(self, label):
+        query_delete = """
+        MATCH (p:Person:
+        """ + label + """)
+        WHERE p.deathdate IS NOT NULL
         DELETE p
         """
 
         with self.driver.session() as session:
-            result = session.run(query_delete, email=email)
-            if result.summary().counters.nodes_deleted > 0:
-                return f"Person '{email}' has been deleted."
-            else:
-                return f"No person found with the email '{email}'."
+            session.run(query_delete)
 
-    def getAllUsers(self):
+    def deleteAllPerson(self, label : str):
+        query_delete = """
+        MATCH (m:Person:
+        """ + label + """) 
+        DELETE m
+        """
+
+        with self.driver.session() as session:
+            session.run(query_delete)
+
+    def getAllPeople(self, label : str):
         query = """
-        MATCH (p:Person:User)
+        MATCH (p:Person:
+        """ + label + """)
+        RETURN p
+        """
+        with self.driver.session() as session:
+            result = session.run(query)
+            persons = []
+            for record in result:
+                person = record["p"]
+                persons.append({
+                    "name": person["name"],
+                    "surname": person["surname"],
+                    "birthdate": person.get("birthdate", ""),
+                    "deathdate": person.get("deathdate", ""),
+                    "gender": person.get("gender", ""),
+                    "email": person.get("email", "")
+                })
+            return persons
+        
+    def getAllAlivePeople(self, label : str):
+        query = """
+        MATCH (p:Person:
+        """ + label + """)
+        WHERE p.deathdate IS NULL
+        RETURN p
+        """
+        with self.driver.session() as session:
+            result = session.run(query)
+            persons = []
+            for record in result:
+                person = record["p"]
+                persons.append({
+                    "name": person["name"],
+                    "surname": person["surname"],
+                    "birthdate": person.get("birthdate", ""),
+                    "deathdate": person.get("deathdate", ""),
+                    "gender": person.get("gender", ""),
+                    "email": person.get("email", "")
+                })
+            return persons
+        
+    def getAllDeadPeople(self, label : str):
+        query = """
+        MATCH (p:Person:
+        """ + label + """)
+        WHERE p.deathdate IS NOT NULL
         RETURN p
         """
         with self.driver.session() as session:
@@ -144,19 +189,10 @@ class Database:
             return persons
     
     
-    def deleteAllUsers(self):
-        query_delete = """
-        MATCH (m:Person:User)
-        DELETE m
-        """
-
-        with self.driver.session() as session:
-            session.run(query_delete)
-    
-    
-    def getUserByEmail(self, email):
+    def getPersonByEmail(self, email, label : str):
         query = """
-        MATCH (u:Person:User)
+        MATCH (u:Person:
+        """ + label + """) 
         WHERE u.email = $email
         RETURN u
         """
@@ -167,3 +203,36 @@ class Database:
                 return user['u']
             else:
                 return None
+            
+    def assignDirectorToMovie(self, director_email, movie_name):
+        query_create_directed = """
+        MATCH (p:Person:Director {email: $director_email}), (m:Movie {name: $movie_name})
+        CREATE (p)-[:DIRECTED]->(m)
+        RETURN p, m
+        """
+        with self.driver.session() as session:
+            session.run(query_create_directed, director_email=director_email, movie_name=movie_name)
+            
+            query_create_directed_by = """
+            MATCH (p:Person:Director {email: $director_email}), (m:Movie {name: $movie_name})
+            CREATE (p)<-[:DIRECTED_BY]-(m)
+            RETURN p, m
+            """ 
+            
+            session.run(query_create_directed_by, director_email=director_email, movie_name=movie_name)
+            
+    def getDirectorOfMovie(self, movie_name: str):
+        query = """
+        MATCH (m:Movie {name: $movie_name})-[:DIRECTED_BY]->(d:Person:Director)
+        RETURN d.name as name, d.surname as surname, d.email as email
+        """
+
+        with self.driver.session() as session:
+            result = session.run(query, movie_name=movie_name)
+            director = result.single()
+
+            if director:
+                return director
+            else:
+                return None
+    

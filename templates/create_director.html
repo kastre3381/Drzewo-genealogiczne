@@ -5,8 +5,8 @@ Create user
 {% endblock %}
 
 {% block content %} 
-<h1>Create a new User</h1>
-<form action="{{ url_for('create_user') }}" method="POST">
+<h1>Create a new Director</h1>
+<form action="{{ url_for('create_director') }}" method="POST">
     <label for="name">First Name:</label>
     <input type="text" id="name" name="name" required><br><br>
 
@@ -28,7 +28,7 @@ Create user
     <label for="email">Email:</label>
     <input type="email" id="email" name="email" required><br><br>
 
-    <button type="submit">Create User</button>
+    <button type="submit">Create Director</button>
 
     <p><a href="/"> Back to home </a></p>
 {% endblock %}
