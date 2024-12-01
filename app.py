@@ -64,37 +64,37 @@ def create_movie():
 
 @app.route('/user/all')
 def users():
-    persons = database.getAllPeople("User")
+    persons = database.getAllUser()
     return render_template('users.html', persons=persons)
 
 @app.route('/user/all/alive')
 def users_alive():
-    persons = database.getAllAlivePeople("User")
+    persons = database.getAllAliveUser()
     return render_template('users.html', persons=persons)
 
 @app.route('/user/all/dead')
 def users_dead():
-    persons = database.getAllDeadPeople("User")
+    persons = database.getAllDeadUser()
     return render_template('users.html', persons=persons)
 
 @app.route('/user/all/delete')
 def users_delete_all():
-    database.deleteAllPerson("User")
+    database.deleteDeadUser()
     return render_template('index.html')
 
 @app.route('/user/all/delete/dead')
 def users_delete_all_dead():
-    database.deleteDeadPerson("User")
+    database.deleteDeadUser()
     return render_template('index.html')
 
 @app.route('/user/<email>', methods=['GET'])
 def get_user_by_email(email):
-    user = database.getPersonByEmail(email, "User")
+    user = database.getUserByEmail(email)
     return render_template('user_detail.html', user=user)
 
 @app.route('/user/<email>/delete')
 def delete_user_by_email(email):
-    database.deletePerson(email, "User")
+    database.deleteUser(email)
     return render_template('index.html')
 
 @app.route('/user/create_user', methods=['GET', 'POST'])
@@ -113,8 +113,8 @@ def create_user():
         else:
             deathdate = None
             
-        database.addPerson(name, surname, birthdate, deathdate, gender, email, "User")
-        users = database.getAllPeople("User")
+        database.addUser(name, surname, birthdate, deathdate, gender, email)
+        users = database.getAllUser()
         return render_template('people.html', persons=users)
 
     
@@ -125,38 +125,40 @@ def create_user():
 
 @app.route('/director/all')
 def directors():
-    persons = database.getAllPeople("Director")
+    persons = database.getAllDirector()
     return render_template('directors.html', persons=persons)
 
 @app.route('/director/all/alive')
 def directors_alive():
-    persons = database.getAllAlivePeople("Director")
+    persons = database.getAllAliveDirector()
     return render_template('directors.html', persons=persons)
 
 @app.route('/director/all/dead')
 def directors_dead():
-    persons = database.getAllDeadPeople("Director")
+    persons = database.getAllDeadDirector()
     return render_template('directors.html', persons=persons)
 
 @app.route('/director/all/delete')
 def directors_delete_all():
-    database.deleteAllPerson("Director")
+    database.deleteAllDirector()
     return render_template('index.html')
 
 @app.route('/director/all/delete/dead')
 def directors_delete_all_dead():
-    database.deleteDeadPerson("Director")
+    database.deleteDeadDirector()
     return render_template('index.html')
 
 @app.route('/director/<email>', methods=['GET'])
 def get_director_by_email(email):
-    director = database.getPersonByEmail(email, "Director")
-    return render_template('director_detail.html', director=director)
+    director = database.getDirectorByEmail(email)
+    movies = database.getMoviesDirectedBy(email)
+    return render_template('director_detail.html', director=director, movies=movies)
+
 
 @app.route('/director/<email>/delete')
 def delete_director_by_email(email):
-    database.deletePerson(email, "Director")
-    return render_template('index.html')
+    database.deleteDirector(email)
+    return redirect("/")
 
 @app.route('/director/create_director', methods=['GET', 'POST'])
 def create_director():
@@ -174,8 +176,8 @@ def create_director():
         else:
             deathdate = None
             
-        database.addPerson(name, surname, birthdate, deathdate, gender, email, "Director")
-        directors = database.getAllPeople("Director")
+        database.addDirector(name, surname, birthdate, deathdate, gender, email)
+        directors = database.getAllDirector()
         return render_template('directors.html', persons=directors)
 
     
@@ -187,65 +189,65 @@ def create_director():
 
 @app.route("/user/all/addMultiple")
 def addMultipleUsers():
-    database.addPerson("Michal", "Tracz", datetime.date(2002, 6, 17), None, "Male", "michTracz@gmail.com", "User")
-    database.addPerson("Anna", "Nowak", datetime.date(1990, 4, 25), None, "Female", "anna.nowak@gmail.com", "User")
-    database.addPerson("Jan", "Kowalski", datetime.date(1985, 12, 15), None, "Male", "jan.kowalski@gmail.com", "User")
-    database.addPerson("Ewa", "Kaczmarek", datetime.date(1995, 8, 10), datetime.date(2020, 11, 1), "Female", "ewa.kaczmarek@gmail.com", "User")
-    database.addPerson("Piotr", "Wójcik", datetime.date(1980, 3, 22), None, "Male", "piotr.wojcik@gmail.com", "User")
-    database.addPerson("Zofia", "Lewandowska", datetime.date(1987, 11, 5), None, "Female", "zofia.lewandowska@gmail.com", "User")
-    database.addPerson("Tomasz", "Zieliński", datetime.date(1992, 1, 30), None, "Male", "tomasz.zielinski@gmail.com", "User")
-    database.addPerson("Karolina", "Szymańska", datetime.date(1996, 7, 18), None, "Female", "karolina.szymanska@gmail.com", "User")
-    database.addPerson("Michał", "Wiśniewski", datetime.date(1982, 9, 5), datetime.date(2015, 8, 20), "Male", "michal.wisniewski@gmail.com", "User")
-    database.addPerson("Magdalena", "Wróblewska", datetime.date(1990, 6, 3), None, "Female", "magdalena.wroblewska@gmail.com", "User")
-    database.addPerson("Kamil", "Krzak", datetime.date(2000, 4, 17), None, "Male", "kamil.krzak@gmail.com", "User")
-    database.addPerson("Daria", "Jankowska", datetime.date(1993, 5, 12), None, "Female", "daria.jankowska@gmail.com", "User")
-    database.addPerson("Paweł", "Piotrowski", datetime.date(1988, 2, 2), None, "Male", "pawel.piotrowski@gmail.com", "User")
-    database.addPerson("Monika", "Krawczyk", datetime.date(1997, 10, 20), None, "Female", "monika.krawczyk@gmail.com", "User")
-    database.addPerson("Łukasz", "Adamczak", datetime.date(1991, 12, 4), None, "Male", "lukasz.adamczak@gmail.com", "User")
-    database.addPerson("Olga", "Mazurek", datetime.date(1999, 1, 15), None, "Female", "olga.mazurek@gmail.com", "User")
-    database.addPerson("Andrzej", "Grabowski", datetime.date(1983, 3, 25), None, "Male", "andrzej.grabowski@gmail.com", "User")
-    database.addPerson("Katarzyna", "Pawlak", datetime.date(1994, 5, 28), None, "Female", "katarzyna.pawlak@gmail.com", "User")
-    database.addPerson("Rafał", "Bąk", datetime.date(2001, 6, 15), None, "Male", "rafal.bak@gmail.com", "User")
-    database.addPerson("Dorota", "Mikulska", datetime.date(1998, 11, 7), None, "Female", "dorota.mikulska@gmail.com", "User")
-    database.addPerson("Jakub", "Kwiatkowski", datetime.date(1994, 2, 22), None, "Male", "jakub.kwiatkowski@gmail.com", "User")
-    database.addPerson("Paulina", "Milewska", datetime.date(1996, 7, 30), None, "Female", "paulina.milewska@gmail.com", "User")
-    database.addPerson("Marek", "Walentowicz", datetime.date(1988, 8, 14), None, "Male", "marek.walentowicz@gmail.com", "User")
-    database.addPerson("Agata", "Kozłowska", datetime.date(1997, 1, 10), None, "Female", "agata.kozlowska@gmail.com", "User")
-    database.addPerson("Artur", "Piątek", datetime.date(1992, 9, 16), None, "Male", "artur.piatek@gmail.com", "User")
-    database.addPerson("Barbara", "Zawisza", datetime.date(1990, 4, 19), None, "Female", "barbara.zawisza@gmail.com", "User")
-    database.addPerson("Szymon", "Borkowski", datetime.date(1993, 5, 4), None, "Male", "szymon.borkowski@gmail.com", "User")
-    database.addPerson("Marta", "Jóźwiak", datetime.date(1989, 3, 13), None, "Female", "marta.joziak@gmail.com", "User")
-    database.addPerson("Piotr", "Szewczyk", datetime.date(1995, 8, 30), None, "Male", "piotr.szewczyk@gmail.com", "User")
-    database.addPerson("Karolina", "Zawisza", datetime.date(1985, 12, 2), None, "Female", "karolina.zawisza@gmail.com", "User")
-    database.addPerson("Tomasz", "Wróblewski", datetime.date(1998, 6, 5), datetime.date(2010, 7, 19), "Male", "tomasz.wroblewski@gmail.com", "User")
-    database.addPerson("Anna", "Wachowiak", datetime.date(1994, 2, 10), None, "Female", "anna.wachowiak@gmail.com", "User")
-    database.addPerson("Jacek", "Czerwiński", datetime.date(1980, 3, 25), None, "Male", "jacek.czerwinski@gmail.com", "User")
-    database.addPerson("Sylwia", "Tomaszewska", datetime.date(1982, 10, 18), None, "Female", "sylwia.tomaszewska@gmail.com", "User")
-    database.addPerson("Patryk", "Pawlak", datetime.date(2000, 5, 14), None, "Male", "patryk.pawlak@gmail.com", "User")
-    database.addPerson("Monika", "Wilk", datetime.date(1997, 4, 11), None, "Female", "monika.wilk@gmail.com", "User")
-    database.addPerson("Marcin", "Borkowski", datetime.date(1996, 8, 20), None, "Male", "marcin.borkowski@gmail.com", "User")
-    database.addPerson("Kinga", "Mazur", datetime.date(1993, 1, 30), None, "Female", "kinga.mazur@gmail.com", "User")
-    database.addPerson("Sebastian", "Kaczmarek", datetime.date(1989, 6, 5), None, "Male", "sebastian.kaczmarek@gmail.com", "User")
-    database.addPerson("Agnieszka", "Stolarz", datetime.date(1991, 12, 22), None, "Female", "agnieszka.stolarz@gmail.com", "User")
-    database.addPerson("Jakub", "Kowal", datetime.date(1999, 3, 7), None, "Male", "jakub.kowal@gmail.com", "User")
-    database.addPerson("Katarzyna", "Duda", datetime.date(1986, 7, 18), None, "Female", "katarzyna.duda@gmail.com", "User")
-    database.addPerson("Piotr", "Zawisza", datetime.date(1994, 4, 12), None, "Male", "piotr.zawisza@gmail.com", "User")
-    database.addPerson("Joanna", "Marek", datetime.date(1992, 10, 22), None, "Female", "joanna.marek@gmail.com", "User")
-    database.addPerson("Radosław", "Wojda", datetime.date(1984, 12, 9), None, "Male", "radoslaw.wojda@gmail.com", "User")
-    database.addPerson("Diana", "Górska", datetime.date(1999, 2, 3), None, "Female", "diana.gorska@gmail.com", "User")
-    database.addPerson("Michał", "Markowski", datetime.date(1995, 9, 11), None, "Male", "michal.markowski@gmail.com", "User")
-    database.addPerson("Ewa", "Marek", datetime.date(1992, 4, 25), None, "Female", "ewa.marek@gmail.com", "User")
-    database.addPerson("Adam", "Stolarz", datetime.date(1985, 11, 10), None, "Male", "adam.stolarz@gmail.com", "User")
-    database.addPerson("Joanna", "Piotrowska", datetime.date(1996, 8, 14), None, "Female", "joanna.piotrowska@gmail.com", "User")
-    database.addPerson("Piotr", "Makowski", datetime.date(1998, 10, 20), None, "Male", "piotr.makowski@gmail.com", "User")
-    database.addPerson("Aleksandra", "Sadowska", datetime.date(1994, 6, 7), None, "Female", "aleksandra.sadowska@gmail.com", "User")
-    database.addPerson("Michał", "Wolak", datetime.date(1999, 9, 2), None, "Male", "michal.wolak@gmail.com", "User")
-    database.addPerson("Wiktoria", "Wójcik", datetime.date(1992, 11, 16), None, "Female", "wiktoria.wojcik@gmail.com", "User")
-    database.addPerson("Krzysztof", "Sienkiewicz", datetime.date(1989, 8, 29), None, "Male", "krzysztof.sienkiewicz@gmail.com", "User")
-    database.addPerson("Elżbieta", "Nowak", datetime.date(1995, 3, 18), None, "Female", "elzbieta.nowak@gmail.com", "User")
-    database.addPerson("Sebastian", "Milewski", datetime.date(1980, 6, 24), None, "Male", "sebastian.milewski@gmail.com", "User")
-    database.addPerson("Sylwia", "Wielkopolska", datetime.date(1990, 5, 30), None, "Female", "sylwia.wielkopolska@gmail.com", "User")
-    database.addPerson("Marek", "Borowski", datetime.date(1988, 7, 2), None, "Male", "marek.borowski@gmail.com", "User")
+    database.addUser("Michal", "Tracz", datetime.date(2002, 6, 17), None, "Male", "michTracz@gmail.com")
+    database.addUser("Anna", "Nowak", datetime.date(1990, 4, 25), None, "Female", "anna.nowak@gmail.com")
+    database.addUser("Jan", "Kowalski", datetime.date(1985, 12, 15), None, "Male", "jan.kowalski@gmail.com")
+    database.addUser("Ewa", "Kaczmarek", datetime.date(1995, 8, 10), datetime.date(2020, 11, 1), "Female", "ewa.kaczmarek@gmail.com")
+    database.addUser("Piotr", "Wójcik", datetime.date(1980, 3, 22), None, "Male", "piotr.wojcik@gmail.com")
+    database.addUser("Zofia", "Lewandowska", datetime.date(1987, 11, 5), None, "Female", "zofia.lewandowska@gmail.com")
+    database.addUser("Tomasz", "Zieliński", datetime.date(1992, 1, 30), None, "Male", "tomasz.zielinski@gmail.com")
+    database.addUser("Karolina", "Szymańska", datetime.date(1996, 7, 18), None, "Female", "karolina.szymanska@gmail.com")
+    database.addUser("Michał", "Wiśniewski", datetime.date(1982, 9, 5), datetime.date(2015, 8, 20), "Male", "michal.wisniewski@gmail.com")
+    database.addUser("Magdalena", "Wróblewska", datetime.date(1990, 6, 3), None, "Female", "magdalena.wroblewska@gmail.com")
+    database.addUser("Kamil", "Krzak", datetime.date(2000, 4, 17), None, "Male", "kamil.krzak@gmail.com")
+    database.addUser("Daria", "Jankowska", datetime.date(1993, 5, 12), None, "Female", "daria.jankowska@gmail.com")
+    database.addUser("Paweł", "Piotrowski", datetime.date(1988, 2, 2), None, "Male", "pawel.piotrowski@gmail.com")
+    database.addUser("Monika", "Krawczyk", datetime.date(1997, 10, 20), None, "Female", "monika.krawczyk@gmail.com")
+    database.addUser("Łukasz", "Adamczak", datetime.date(1991, 12, 4), None, "Male", "lukasz.adamczak@gmail.com")
+    database.addUser("Olga", "Mazurek", datetime.date(1999, 1, 15), None, "Female", "olga.mazurek@gmail.com")
+    database.addUser("Andrzej", "Grabowski", datetime.date(1983, 3, 25), None, "Male", "andrzej.grabowski@gmail.com")
+    database.addUser("Katarzyna", "Pawlak", datetime.date(1994, 5, 28), None, "Female", "katarzyna.pawlak@gmail.com")
+    database.addUser("Rafał", "Bąk", datetime.date(2001, 6, 15), None, "Male", "rafal.bak@gmail.com")
+    database.addUser("Dorota", "Mikulska", datetime.date(1998, 11, 7), None, "Female", "dorota.mikulska@gmail.com")
+    database.addUser("Jakub", "Kwiatkowski", datetime.date(1994, 2, 22), None, "Male", "jakub.kwiatkowski@gmail.com")
+    database.addUser("Paulina", "Milewska", datetime.date(1996, 7, 30), None, "Female", "paulina.milewska@gmail.com")
+    database.addUser("Marek", "Walentowicz", datetime.date(1988, 8, 14), None, "Male", "marek.walentowicz@gmail.com")
+    database.addUser("Agata", "Kozłowska", datetime.date(1997, 1, 10), None, "Female", "agata.kozlowska@gmail.com")
+    database.addUser("Artur", "Piątek", datetime.date(1992, 9, 16), None, "Male", "artur.piatek@gmail.com")
+    database.addUser("Barbara", "Zawisza", datetime.date(1990, 4, 19), None, "Female", "barbara.zawisza@gmail.com")
+    database.addUser("Szymon", "Borkowski", datetime.date(1993, 5, 4), None, "Male", "szymon.borkowski@gmail.com")
+    database.addUser("Marta", "Jóźwiak", datetime.date(1989, 3, 13), None, "Female", "marta.joziak@gmail.com")
+    database.addUser("Piotr", "Szewczyk", datetime.date(1995, 8, 30), None, "Male", "piotr.szewczyk@gmail.com")
+    database.addUser("Karolina", "Zawisza", datetime.date(1985, 12, 2), None, "Female", "karolina.zawisza@gmail.com")
+    database.addUser("Tomasz", "Wróblewski", datetime.date(1998, 6, 5), datetime.date(2010, 7, 19), "Male", "tomasz.wroblewski@gmail.com")
+    database.addUser("Anna", "Wachowiak", datetime.date(1994, 2, 10), None, "Female", "anna.wachowiak@gmail.com")
+    database.addUser("Jacek", "Czerwiński", datetime.date(1980, 3, 25), None, "Male", "jacek.czerwinski@gmail.com")
+    database.addUser("Sylwia", "Tomaszewska", datetime.date(1982, 10, 18), None, "Female", "sylwia.tomaszewska@gmail.com")
+    database.addUser("Patryk", "Pawlak", datetime.date(2000, 5, 14), None, "Male", "patryk.pawlak@gmail.com")
+    database.addUser("Monika", "Wilk", datetime.date(1997, 4, 11), None, "Female", "monika.wilk@gmail.com")
+    database.addUser("Marcin", "Borkowski", datetime.date(1996, 8, 20), None, "Male", "marcin.borkowski@gmail.com")
+    database.addUser("Kinga", "Mazur", datetime.date(1993, 1, 30), None, "Female", "kinga.mazur@gmail.com")
+    database.addUser("Sebastian", "Kaczmarek", datetime.date(1989, 6, 5), None, "Male", "sebastian.kaczmarek@gmail.com")
+    database.addUser("Agnieszka", "Stolarz", datetime.date(1991, 12, 22), None, "Female", "agnieszka.stolarz@gmail.com")
+    database.addUser("Jakub", "Kowal", datetime.date(1999, 3, 7), None, "Male", "jakub.kowal@gmail.com")
+    database.addUser("Katarzyna", "Duda", datetime.date(1986, 7, 18), None, "Female", "katarzyna.duda@gmail.com")
+    database.addUser("Piotr", "Zawisza", datetime.date(1994, 4, 12), None, "Male", "piotr.zawisza@gmail.com")
+    database.addUser("Joanna", "Marek", datetime.date(1992, 10, 22), None, "Female", "joanna.marek@gmail.com")
+    database.addUser("Radosław", "Wojda", datetime.date(1984, 12, 9), None, "Male", "radoslaw.wojda@gmail.com")
+    database.addUser("Diana", "Górska", datetime.date(1999, 2, 3), None, "Female", "diana.gorska@gmail.com")
+    database.addUser("Michał", "Markowski", datetime.date(1995, 9, 11), None, "Male", "michal.markowski@gmail.com")
+    database.addUser("Ewa", "Marek", datetime.date(1992, 4, 25), None, "Female", "ewa.marek@gmail.com")
+    database.addUser("Adam", "Stolarz", datetime.date(1985, 11, 10), None, "Male", "adam.stolarz@gmail.com")
+    database.addUser("Joanna", "Piotrowska", datetime.date(1996, 8, 14), None, "Female", "joanna.piotrowska@gmail.com")
+    database.addUser("Piotr", "Makowski", datetime.date(1998, 10, 20), None, "Male", "piotr.makowski@gmail.com")
+    database.addUser("Aleksandra", "Sadowska", datetime.date(1994, 6, 7), None, "Female", "aleksandra.sadowska@gmail.com")
+    database.addUser("Michał", "Wolak", datetime.date(1999, 9, 2), None, "Male", "michal.wolak@gmail.com")
+    database.addUser("Wiktoria", "Wójcik", datetime.date(1992, 11, 16), None, "Female", "wiktoria.wojcik@gmail.com")
+    database.addUser("Krzysztof", "Sienkiewicz", datetime.date(1989, 8, 29), None, "Male", "krzysztof.sienkiewicz@gmail.com")
+    database.addUser("Elżbieta", "Nowak", datetime.date(1995, 3, 18), None, "Female", "elzbieta.nowak@gmail.com")
+    database.addUser("Sebastian", "Milewski", datetime.date(1980, 6, 24), None, "Male", "sebastian.milewski@gmail.com")
+    database.addUser("Sylwia", "Wielkopolska", datetime.date(1990, 5, 30), None, "Female", "sylwia.wielkopolska@gmail.com")
+    database.addUser("Marek", "Borowski", datetime.date(1988, 7, 2), None, "Male", "marek.borowski@gmail.com")
 
     return render_template("index.html")
 
