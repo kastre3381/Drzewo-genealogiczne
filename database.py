@@ -1,4 +1,5 @@
 from neo4j import GraphDatabase
+from neo4j.time import Time
 import datetime
 
 class Database:
@@ -50,10 +51,16 @@ class Database:
             result = session.run(query)
             movies = []
             for record in result:
+                if isinstance(record['length'], Time):
+                    neo4j_time = record['length']
+                    length = datetime.time(neo4j_time.hour, neo4j_time.minute)
+                    formatted_length = length.strftime('%H:%M')  # Teraz możemy użyć strftime
+                else:
+                    formatted_length = None
                 movie = {
                     "name": record["name"],
                     "release_date": record["release_date"],
-                    "length": record["length"]
+                    "length": formatted_length
                 }
                 movies.append(movie)
                 
@@ -63,13 +70,27 @@ class Database:
         query = """
         MATCH (m:Movie)
         WHERE m.name = $name
-        RETURN m
+        RETURN m.name AS name, m.release_date AS release_date, m.length AS length
         """
         with self.driver.session() as session:
             result = session.run(query, name=name)
             movie = result.single()
             if movie:
-                return movie['m']
+                # Sprawdzenie, czy 'length' to obiekt neo4j.time.Time
+                if isinstance(movie['length'], Time):
+                    neo4j_time = movie['length']
+                    # Konwersja na datetime.time
+                    length = datetime.time(neo4j_time.hour, neo4j_time.minute)
+                    formatted_length = length.strftime('%H:%M')  # Formatowanie czasu na HH:MM
+                else:
+                    formatted_length = None
+
+                # Zwrócenie danych filmu z przekształconym czasem
+                return {
+                    'name': movie['name'],
+                    'release_date': movie['release_date'],
+                    'length': formatted_length
+                }
             else:
                 return None
         
@@ -160,7 +181,8 @@ class Database:
             query_delete = """
             MATCH (p:Director {email: $email})
             OPTIONAL MATCH (p)-[r:DIRECTED]->(m:Movie)
-            DELETE r, p
+            OPTIONAL MATCH (c:Comment)-[r2:COMMENTED_UNDER]->(m:Movie)
+            DELETE r, r2, p, m, c
             """
             session.run(query_delete, email=email)
             print("Director deleted successfully.")
@@ -422,7 +444,7 @@ class Database:
         
         with self.driver.session() as session:
             current_key = session.run(query).single()['current_key']
-            
+            print(current_key)
             query = """
             CREATE (c:Comment {key: $key, rating: $rating, text: $text})
             RETURN c
@@ -447,39 +469,61 @@ class Database:
             """
             session.run(query)
             
-    def getCommentsByMovie(self, movie_name):
-        query = """
-        MATCH (c:Comment)-[:COMMENTED_UNDER]->(m:Movie {name: $movie_name})
-        RETURN c.key as key, c.rating as rating, c.text as text
-        """
-        a, b = 0.0, 0.0
-        with self.driver.session() as session:
-            result = session.run(query, movie_name=movie_name)
-            comments = []
-            for record in result:
-                a += int(record["rating"])
-                b += 1.0
-                comments.append({
-                    "key": record["key"],
-                    "rating": record["rating"],
-                    "text": record["text"]
-                })
-            return comments, a/b if b else 0.0
         
     def getAllCommentsByUser(self, email):
         query = """
         MATCH (u:User {email: $email})-[:COMMENTED]->(c:Comment)
         RETURN c.key AS key, c.rating AS rating, c.text AS text
         """
-
+        num = 0
         with self.driver.session() as session:
             result = session.run(query, email=email)
             comments = []
             for record in result:
+                num+=1
                 comment = {
                     "key": record["key"],
                     "rating": record["rating"],
                     "text": record["text"],
                 }
                 comments.append(comment)
-            return comments 
+            return comments, num
+        
+    def deleteComment(self, key):
+        query = """
+        MATCH (c:Comment {key: $key})
+        OPTIONAL MATCH (c)-[r:COMMENTED]->(u:User)
+        OPTIONAL MATCH (c)-[r2:COMMENTED_UNDER]->(m:Movie)
+        DETACH DELETE c, r, r2
+        """
+
+        with self.driver.session() as session:
+            try:
+                result = session.run(query, key=key)
+                print(f"Komentarz o kluczu {key} i jego relacje zostały usunięte.")
+            except Exception as e:
+                print(f"Error during deleting comment: {e}")
+
+    def getMovieRatingWithComments(self, name):
+        query_avg = """
+        MATCH (m:Movie {name: $name})<-[:COMMENTED_UNDER]-(c:Comment)
+        RETURN c.rating AS rating
+        """
+
+        with self.driver.session() as session: 
+            result_avg = session.run(query_avg, name=name)
+            a, b = 0.0, 0.0
+            
+            for record in result_avg:
+                b+=1
+                a+=int(record["rating"])
+                print("rec:",a)
+                
+            avg = float(a)/float(b) if b else 0.0
+            
+
+            return avg 
+
+
+
+

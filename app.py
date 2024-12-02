@@ -20,7 +20,8 @@ def movies():
 def get_movie_by_name(name):
     movie = database.getMovieByName(name)
     director = database.getDirectorOfMovie(name)
-    return render_template('movie_details.html', movie=movie, director=director)
+    avg = database.getMovieRatingWithComments(name)
+    return render_template('movie_details.html', movie=movie, director=director, avg=avg)
 
 @app.route('/movie/<name>/delete')
 def delete_movie_by_name(name):
@@ -90,7 +91,8 @@ def users_delete_all_dead():
 @app.route('/user/<email>', methods=['GET'])
 def get_user_by_email(email):
     user = database.getUserByEmail(email)
-    return render_template('user_detail.html', user=user)
+    comments, num = database.getAllCommentsByUser(email)
+    return render_template('user_detail.html', user=user, num=num, comments=comments)
 
 @app.route('/user/<email>/delete')
 def delete_user_by_email(email):
@@ -105,13 +107,22 @@ def add_comment_by_user(email):
         text = request.form['text']
         
         database.addComment(email, movie, rating, text)
-        
         user = database.getUserByEmail(email)
-        return render_template('user_detail.html', user=user)
+        comments, num = database.getAllCommentsByUser(email)
+        return render_template('user_detail.html', user=user, num=num, comments=comments)
 
 
     movies = database.getAllMovies()
     return render_template('create_comment.html', email=email, movies=movies)
+
+@app.route('/user/<email>/deleteComment/<int:key>', methods=['GET', 'POST'])
+def delete_comment_by_user(email, key):
+    database.deleteComment(key)
+    
+    user = database.getUserByEmail(email)
+    comments, num = database.getAllCommentsByUser(email)
+    return render_template('user_detail.html', user=user, num=num, comments=comments)
+
 
 @app.route('/user/create_user', methods=['GET', 'POST'])
 def create_user():
