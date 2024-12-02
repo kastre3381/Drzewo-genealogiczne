@@ -97,6 +97,22 @@ def delete_user_by_email(email):
     database.deleteUser(email)
     return redirect("/")
 
+@app.route('/user/<email>/addRating', methods=['GET', 'POST'])
+def add_comment_by_user(email):
+    if request.method == 'POST':
+        rating = request.form['rating']
+        movie = request.form['movie']
+        text = request.form['text']
+        
+        database.addComment(email, movie, rating, text)
+        
+        user = database.getUserByEmail(email)
+        return render_template('user_detail.html', user=user)
+
+
+    movies = database.getAllMovies()
+    return render_template('create_comment.html', email=email, movies=movies)
+
 @app.route('/user/create_user', methods=['GET', 'POST'])
 def create_user():
     if request.method == 'POST':

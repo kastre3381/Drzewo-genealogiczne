@@ -413,3 +413,73 @@ class Database:
                 movies.append({"name": record["name"]})
 
             return movies if movies else None
+        
+    def addComment(self, email, name, rating, text):
+        query = """
+        MATCH (k:Key)
+        RETURN k.current_key AS current_key
+        """
+        
+        with self.driver.session() as session:
+            current_key = session.run(query).single()['current_key']
+            
+            query = """
+            CREATE (c:Comment {key: $key, rating: $rating, text: $text})
+            RETURN c
+            """
+            session.run(query, key=current_key, rating=rating, text=text)
+
+            query = """
+            MATCH (u:User {email: $email}), (c:Comment {key: $key})
+            CREATE (u)-[:COMMENTED]->(c)
+            """
+            session.run(query, key=current_key, email=email)
+
+            query = """
+            MATCH (c:Comment {key: $key}), (m:Movie {name: $name})
+            CREATE (c)-[:COMMENTED_UNDER]->(m)
+            """
+            session.run(query, key=current_key, name=name)
+            
+            query = """
+            MATCH(k:Key)
+            SET k.current_key = k.current_key + 1
+            """
+            session.run(query)
+            
+    def getCommentsByMovie(self, movie_name):
+        query = """
+        MATCH (c:Comment)-[:COMMENTED_UNDER]->(m:Movie {name: $movie_name})
+        RETURN c.key as key, c.rating as rating, c.text as text
+        """
+        a, b = 0.0, 0.0
+        with self.driver.session() as session:
+            result = session.run(query, movie_name=movie_name)
+            comments = []
+            for record in result:
+                a += int(record["rating"])
+                b += 1.0
+                comments.append({
+                    "key": record["key"],
+                    "rating": record["rating"],
+                    "text": record["text"]
+                })
+            return comments, a/b if b else 0.0
+        
+    def getAllCommentsByUser(self, email):
+        query = """
+        MATCH (u:User {email: $email})-[:COMMENTED]->(c:Comment)
+        RETURN c.key AS key, c.rating AS rating, c.text AS text
+        """
+
+        with self.driver.session() as session:
+            result = session.run(query, email=email)
+            comments = []
+            for record in result:
+                comment = {
+                    "key": record["key"],
+                    "rating": record["rating"],
+                    "text": record["text"],
+                }
+                comments.append(comment)
+            return comments 
