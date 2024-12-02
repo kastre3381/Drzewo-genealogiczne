@@ -25,7 +25,7 @@ def get_movie_by_name(name):
 @app.route('/movie/<name>/delete')
 def delete_movie_by_name(name):
     database.deleteMovie(name)
-    return render_template('index.html')
+    return redirect("/")
 
 @app.route('/movie/<name>/assign_director', methods=['GET', 'POST'])
 def assign_director(name):
@@ -46,19 +46,19 @@ def create_movie():
         release_date = request.form['release_date']
         release_date = datetime.datetime.strptime(release_date, "%Y-%m-%d").date()
         length = request.form['length']
-        
+        director = request.form['director']
 
         hour, minute = map(int, length.split(':'))
         length = datetime.time(hour=hour, minute=minute)
 
         print(length)
 
-        database.addMovie(name=name, release_date=release_date, length=length)
+        database.addMovie(name=name, release_date=release_date, length=length, director=director)
         movies = database.getAllMovies()
         return render_template('movies.html', movies=movies)
 
-    
-    return render_template('create_movie.html')
+    directors = database.getAllDirector()
+    return render_template('create_movie.html', directors=directors)
 
 
 
@@ -79,13 +79,13 @@ def users_dead():
 
 @app.route('/user/all/delete')
 def users_delete_all():
-    database.deleteDeadUser()
-    return render_template('index.html')
+    database.deleteAllUser()
+    return redirect("/")
 
 @app.route('/user/all/delete/dead')
 def users_delete_all_dead():
     database.deleteDeadUser()
-    return render_template('index.html')
+    return redirect("/")
 
 @app.route('/user/<email>', methods=['GET'])
 def get_user_by_email(email):
@@ -95,7 +95,7 @@ def get_user_by_email(email):
 @app.route('/user/<email>/delete')
 def delete_user_by_email(email):
     database.deleteUser(email)
-    return render_template('index.html')
+    return redirect("/")
 
 @app.route('/user/create_user', methods=['GET', 'POST'])
 def create_user():
@@ -113,9 +113,11 @@ def create_user():
         else:
             deathdate = None
             
-        database.addUser(name, surname, birthdate, deathdate, gender, email)
+        if deathdate and deathdate >= birthdate:  
+            database.addUser(name, surname, birthdate, deathdate, gender, email)
+        
         users = database.getAllUser()
-        return render_template('people.html', persons=users)
+        return render_template('users.html', persons=users, val="All")
 
     
     return render_template('create_user.html')
@@ -126,32 +128,37 @@ def create_user():
 @app.route('/director/all')
 def directors():
     persons = database.getAllDirector()
-    return render_template('directors.html', persons=persons)
+    val = "All"
+    return render_template('directors.html', persons=persons, val=val)
 
 @app.route('/director/all/alive')
 def directors_alive():
     persons = database.getAllAliveDirector()
-    return render_template('directors.html', persons=persons)
+    val = "Alive"
+    return render_template('directors.html', persons=persons, val=val)
 
 @app.route('/director/all/dead')
 def directors_dead():
     persons = database.getAllDeadDirector()
-    return render_template('directors.html', persons=persons)
+    val = "Dead"
+    return render_template('directors.html', persons=persons, val=val)
 
 @app.route('/director/all/delete')
 def directors_delete_all():
     database.deleteAllDirector()
-    return render_template('index.html')
+    return redirect("/")
 
 @app.route('/director/all/delete/dead')
 def directors_delete_all_dead():
     database.deleteDeadDirector()
-    return render_template('index.html')
+    return redirect("/")
 
 @app.route('/director/<email>', methods=['GET'])
 def get_director_by_email(email):
     director = database.getDirectorByEmail(email)
     movies = database.getMoviesDirectedBy(email)
+    if not movies:
+        movies = {}
     return render_template('director_detail.html', director=director, movies=movies)
 
 
@@ -178,7 +185,8 @@ def create_director():
             
         database.addDirector(name, surname, birthdate, deathdate, gender, email)
         directors = database.getAllDirector()
-        return render_template('directors.html', persons=directors)
+        val="All"
+        return render_template('directors.html', persons=directors, val=val)
 
     
     return render_template('create_director.html')
@@ -249,7 +257,7 @@ def addMultipleUsers():
     database.addUser("Sylwia", "Wielkopolska", datetime.date(1990, 5, 30), None, "Female", "sylwia.wielkopolska@gmail.com")
     database.addUser("Marek", "Borowski", datetime.date(1988, 7, 2), None, "Male", "marek.borowski@gmail.com")
 
-    return render_template("index.html")
+    return redirect("/")
 
 
 if __name__ == "__main__":

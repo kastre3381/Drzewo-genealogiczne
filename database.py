@@ -13,7 +13,7 @@ class Database:
     def close(self):
         self.driver.close()
         
-    def addMovie(self, name : str, release_date : datetime, length : datetime.time):
+    def addMovie(self, name : str, release_date : datetime, length : datetime.time, director : str):
        query_check = """
         MATCH (m:Movie {name: $name})
         RETURN m
@@ -31,6 +31,13 @@ class Database:
            """
            
            session.run(query, name=name, release_date=release_date, length=length)
+           
+           query = """
+           MATCH (m:Movie {name: $name}), (d:Director {email: $director})
+           CREATE (d)-[:DIRECTED]->(m)
+           RETURN m, d
+           """
+           session.run(query, name=name, director=director)
         
         
     def getAllMovies(self):
@@ -67,14 +74,18 @@ class Database:
                 return None
         
     def deleteMovie(self, name):
-        query_delete = """
-        MATCH (m:Movie {name: $name})
-        DELETE m
+        query = """
+        MATCH (m:Movie {name: $name})-[r]-()
+        DETACH DELETE r, m
         """
 
         with self.driver.session() as session:
-            session.run(query_delete, name=name)
-            
+            try:
+                session.run(query, name=name)
+                print(f"Film '{name}' i jego relacje zostały usunięte.")
+            except Exception as e:
+                print(f"Error during deleting movie: {e}")
+
             
     def addUser(self, name, surname, birthdate, deathdate, gender, email):
         query_check = """
@@ -114,7 +125,7 @@ class Database:
                 return 
            
             query_create = """
-            CREATE (p:User {name: $name, surname: $surname, birthdate: $birthdate, deathdate: $deathdate, gender: $gender, email: $email})
+            CREATE (p:Director {name: $name, surname: $surname, birthdate: $birthdate, deathdate: $deathdate, gender: $gender, email: $email})
             RETURN p
             """
             session.run(query_create, name=name, 
@@ -157,7 +168,7 @@ class Database:
             
     def deleteDeadUser(self):
         query_delete = """
-        MATCH (p:Person)
+        MATCH (p:User)
         WHERE p.deathdate IS NOT NULL
         DELETE p
         """
@@ -351,8 +362,7 @@ class Database:
     def assignDirectorToMovie(self, director_email, movie_name):
         query_create_directed = """
         MATCH (p:Director {email: $director_email}), (m:Movie {name: $movie_name})
-        CREATE (p)-[:DIRECTED]->(m),
-               (m)-[:DIRECTED_BY]->(p)
+        CREATE (p)-[:DIRECTED]->(m)
         RETURN p, m
         """
         with self.driver.session() as session:
@@ -360,7 +370,7 @@ class Database:
             
     def getDirectorOfMovie(self, movie_name: str):
         query = """
-        MATCH (m:Movie {name: $movie_name})-[:DIRECTED_BY]->(d:Director)
+        MATCH (m:Movie {name: $movie_name})<-[:DIRECTED]-(d:Director)
         RETURN d.name as name, d.surname as surname, d.email as email
         """
 
@@ -372,6 +382,22 @@ class Database:
                 return director
             else:
                 return None
+            
+    def getMoviesNotDirectedBy(self, director_email):
+        query = """
+        MATCH (d:Director {email: $director_email}), (m:Movie)
+        WHERE NOT (d)-[:DIRECTED]->(m)
+        RETURN m.name as name
+        """
+
+        with self.driver.session() as session:
+            result = session.run(query, director_email=director_email)
+            movies = []
+
+            for record in result:
+                movies.append(record["name"])
+
+            return movies
             
     def getMoviesDirectedBy(self, director_email: str):
         query = """

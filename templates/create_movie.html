@@ -5,7 +5,7 @@ Create movie
 {% endblock %}
 
 {% block content %} 
-<h1>Create a new movie</h1>
+<h1 class="mb-5">Create movie</h1>
 <form action="{{ url_for('create_movie') }}" method="POST">
     <label for="name">Movie Name:</label>
     <input type="text" id="name" name="name" required><br><br>
@@ -16,7 +16,14 @@ Create movie
     <label for="length">Length (HH:MM):</label>
     <input type="text" id="length" name="length" required><br><br>
 
-    <button type="submit">Create movie</button>
+    <label for="director">Director</label>
+    <select id="director" name="director">
+    {% for director in directors %}
+        <option value={{ director.email }}>{{director.name}} {{director.surname}}</option>
+    {% endfor %}
+    </select><br><br>
 
+    <button type="submit">Create movie</button>
+</form>
     <p><a href="/"> Back to home </a></p>
 {% endblock %}
