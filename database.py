@@ -40,6 +40,15 @@ class Database:
            """
            session.run(query, name=name, director=director)
         
+    def deleteMovies(self):
+        query = """
+        MATCH (m:Movie)-[r]-()
+        DETACH DELETE r, m
+        """
+
+        with self.driver.session() as session:
+            session.run(query)
+
         
     def getAllMovies(self):
         query = """
@@ -157,8 +166,9 @@ class Database:
 
     def deleteUser(self, email):
         query_delete = """
-        MATCH (p:User {email: $email})
-        DELETE p
+        MATCH (u:User {email: $email})
+        OPTIONAL MATCH (u)-[:COMMENTED]->(c:Comment)-[:COMMENTED_UNDER]->(m:Movie)
+        DETACH DELETE u, c
         """
         
         with self.driver.session() as session:
@@ -190,9 +200,10 @@ class Database:
             
     def deleteDeadUser(self):
         query_delete = """
-        MATCH (p:User)
-        WHERE p.deathdate IS NOT NULL
-        DELETE p
+        MATCH (u:User)
+        OPTIONAL MATCH (u)-[:COMMENTED]->(c:Comment)-[:COMMENTED_UNDER]->(m:Movie)
+        WHERE u.deathdate IS NOT NULL
+        DETACH DELETE u, c
         """
 
         with self.driver.session() as session:
@@ -201,8 +212,9 @@ class Database:
     def deleteDeadDirector(self):
         query_delete = """
         MATCH (p:Director)
-        WHERE p.deathdate IS NOT NULL
-        DELETE p
+        OPTIONAL MATCH (p)-[:DIRECTED]->(m:Movie)<-[:COMMENTED_UNDER]-(c:Comment)
+        WHERE p.deathdate IN NOT NULL
+        DETACH DELETE p, m, c
         """
 
         with self.driver.session() as session:
@@ -210,8 +222,9 @@ class Database:
 
     def deleteAllUser(self):
         query_delete = """
-        MATCH (m:User) 
-        DELETE m
+        MATCH (u:User)
+        OPTIONAL MATCH (u)-[:COMMENTED]->(c:Comment)-[:COMMENTED_UNDER]->(m:Movie)
+        DETACH DELETE u, c
         """
 
         with self.driver.session() as session:
@@ -473,7 +486,9 @@ class Database:
     def getAllCommentsByUser(self, email):
         query = """
         MATCH (u:User {email: $email})-[:COMMENTED]->(c:Comment)
-        RETURN c.key AS key, c.rating AS rating, c.text AS text
+        WITH c
+        MATCH (c)-[:COMMENTED_UNDER]->(m:Movie)
+        RETURN c.key AS key, c.rating AS rating, c.text AS text, m.name AS name
         """
         num = 0
         with self.driver.session() as session:
@@ -482,6 +497,7 @@ class Database:
             for record in result:
                 num+=1
                 comment = {
+                    "name": record["name"],
                     "key": record["key"],
                     "rating": record["rating"],
                     "text": record["text"],
@@ -504,7 +520,7 @@ class Database:
             except Exception as e:
                 print(f"Error during deleting comment: {e}")
 
-    def getMovieRatingWithComments(self, name):
+    def getMovieRating(self, name):
         query_avg = """
         MATCH (m:Movie {name: $name})<-[:COMMENTED_UNDER]-(c:Comment)
         RETURN c.rating AS rating
@@ -512,6 +528,28 @@ class Database:
 
         with self.driver.session() as session: 
             result_avg = session.run(query_avg, name=name)
+            a, b = 0.0, 0.0
+            
+            for record in result_avg:
+                b+=1
+                a+=int(record["rating"])
+                print("rec:",a)
+                
+            avg = float(a)/float(b) if b else 0.0
+            
+
+            return avg 
+
+    def getDirectorRating(self, email):
+        query_avg = """
+        MATCH (m:Movie)<-[:COMMENTED_UNDER]-(c:Comment)
+        WITH m, c
+        MATCH (m)<-[:DIRECTED]-(d:Director {email: $email})
+        RETURN c.rating AS rating
+        """
+
+        with self.driver.session() as session: 
+            result_avg = session.run(query_avg, email=email)
             a, b = 0.0, 0.0
             
             for record in result_avg:

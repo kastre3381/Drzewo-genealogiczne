@@ -16,11 +16,17 @@ def movies():
     movies = database.getAllMovies()
     return render_template('movies.html', movies=movies)
 
+@app.route('/movie/all/delete')
+def movies_delete():
+    database.deleteMovies()
+    movies = database.getAllMovies()
+    return render_template('movies.html', movies=movies)
+
 @app.route('/movie/<name>', methods=['GET'])
 def get_movie_by_name(name):
     movie = database.getMovieByName(name)
     director = database.getDirectorOfMovie(name)
-    avg = database.getMovieRatingWithComments(name)
+    avg = database.getMovieRating(name)
     return render_template('movie_details.html', movie=movie, director=director, avg=avg)
 
 @app.route('/movie/<name>/delete')
@@ -186,7 +192,8 @@ def get_director_by_email(email):
     movies = database.getMoviesDirectedBy(email)
     if not movies:
         movies = {}
-    return render_template('director_detail.html', director=director, movies=movies)
+    rating = database.getDirectorRating(email)
+    return render_template('director_detail.html', director=director, movies=movies, rating=rating)
 
 
 @app.route('/director/<email>/delete')

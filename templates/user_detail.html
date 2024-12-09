@@ -20,6 +20,7 @@ User details
     <table class=" table table-dark">
         <thead>
             <tr>
+                <th>Movie name</th>
                 <th>Rating</th>
                 <th>Text</th>
                 <th>Delete</th>
@@ -28,6 +29,7 @@ User details
         <tbody>
             {% for comment in comments %}
             <tr>
+                <td><a href="{{ url_for('get_movie_by_name', name=user['email']) }}">{{ comment.name }}</a></td>
                 <td>{{ comment.rating }}/5</td>
                 <td>{{ comment.text }}</td>        
                 <td><a href="{{ url_for('delete_comment_by_user', email=user['email'], key=comment.key) }}">Delete comment</a></td>   
